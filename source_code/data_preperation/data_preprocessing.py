@@ -25,14 +25,22 @@ class dataPreprocessing():
         return True
 
 
-    def convertStringtoInt(self):
-        pass
+    def convertStringtoInt(self, column_name: str):
+        new_column_name = column_name + "_converted"
+        conversion_vals = self.processed_dataframe[column_name].unique()
+        # dictionary converting string to int
+        conversion_dict = {string: numer for numer, string in enumerate(conversion_vals)}
+        # adding new column 
+        self.processed_dataframe[new_column_name] = self.processed_dataframe[column_name].map(conversion_dict)
+        return conversion_dict
 
 
-    def findMinAndMaxValues(self):
+    def findMinAndMaxValues(self) -> bool:
         for column, dtype in self.unprocessed_dataframe.dtypes.items():
             if dtype in ['int64', 'float64']:
-                self.min_max_column_vals[column] = [self.unprocessed_dataframe[column].min(), self.unprocessed_dataframe[column].max(), dtype]
+                self.min_max_column_vals[column] = [self.unprocessed_dataframe[column].min(), 
+                                                    self.unprocessed_dataframe[column].max(), 
+                                                    dtype]
         return True
 
 
