@@ -1,23 +1,28 @@
+from typing import Tuple
+
 import pandas as pd
 
 
 class DataPreprocessing:
     def __init__(self, path: str) -> None:
+        self.original_df: pd.DataFrame = None
         self.unprocessed_dataframe: pd.DataFrame = None
         self.processed_dataframe: pd.DataFrame = None
+
         self.min_max_column_vals: dict = {}
-        self.conversion_dicts = {}
+        self.conversion_dicts: dict = {}
 
         self.loadDatabase(path)
         # used_features = ['id', 'srcip', "sport", 'dstip', 'dsport', 'sbytes', 'dbytes', 'state', 'dur', 'proto', 
         #                  'service', 'trans_depth', 'attack_cat', 'label']
+        self.removeUselessColumns(['sbytes', 'dbytes', 'is_ftp_login',
+                                   'swin', 'dwin', 'trans_depth'])
         self.selectFeatures()
-        # print(data.processed_dataframe.head())
         self.convertStringtoInt(True)
-        self.findMinAndMaxValues()
-        # print(data.conversion_dicts)
-        # print(data.min_max_column_vals)
         self.removeStringColumns()
+        self.findMinAndMaxValues()
+        self.attack_df, self.normal_df = self.makeDfsForAttacksAndNormalEntries()
+        self.column_labels = self.getColumnLabels()
 
     def loadDatabase(self, path: str) -> bool:
         # for kdd database
@@ -41,12 +46,13 @@ class DataPreprocessing:
 
         # self.unprocessed_dataframe = pd.read_csv(path,names=columns)
 
-        # for unsw_nb15 
+        # for unsw_nb15
+        self.original_df = pd.read_csv(path)
         self.unprocessed_dataframe = pd.read_csv(path)
         return True
 
-    def convertStringtoInt(self, all: bool, column_name: str = None) -> bool:
-        if column_name:
+    def convertStringtoInt(self, all_cols: bool = True, column_name: str = None) -> bool:
+        if not all_cols:
             new_column_name = column_name + "_converted"
             conversion_vals = self.processed_dataframe[column_name].unique()
             # dictionary converting string to int
@@ -55,9 +61,10 @@ class DataPreprocessing:
             self.processed_dataframe[new_column_name] = self.processed_dataframe[column_name].map(conversion_dict)
             self.conversion_dicts[new_column_name] = conversion_dict
         else:
+            print(self.processed_dataframe.head())
             for column_name, dtype in self.processed_dataframe.dtypes.items():
                 # print(column_name)
-                if dtype not in ['int64', 'float64']:
+                if dtype not in ['int64', 'float64'] and column_name != "attack_cat":
                     new_column_name = column_name + "_converted"
                     conversion_vals = self.processed_dataframe[column_name].unique()
                     # dictionary converting string to int
@@ -66,12 +73,13 @@ class DataPreprocessing:
                     self.processed_dataframe[new_column_name] = \
                         self.processed_dataframe[column_name].map(conversion_dict)
                     self.conversion_dicts[new_column_name] = conversion_dict
+            print(self.processed_dataframe.head())
 
         return True
 
     def findMinAndMaxValues(self) -> bool:
         for column, dtype in self.unprocessed_dataframe.dtypes.items():
-            if dtype in ['int64', 'float64']:
+            if dtype in ['int64', 'float64'] and not column == "label" and not column == 'id':
                 self.min_max_column_vals[column] = [self.unprocessed_dataframe[column].min(), 
                                                     self.unprocessed_dataframe[column].max(), 
                                                     dtype]
@@ -88,6 +96,23 @@ class DataPreprocessing:
         for column, dtype in self.processed_dataframe.dtypes.items():
             if dtype not in ['int64', 'float64']:
                 self.processed_dataframe.drop(column, axis = 'columns', inplace=True)
+        return True
+
+    def makeDfsForAttacksAndNormalEntries(self) -> Tuple:
+        attack_df = self.processed_dataframe[self.processed_dataframe['label'] == 1]
+        # attack_df = attack_df.drop(columns=['label'])
+        normal_df = self.processed_dataframe[self.processed_dataframe['label'] == 0]
+        # normal_df = normal_df.drop(columns=['label'])
+
+        return attack_df, normal_df
+
+    def getColumnLabels(self) -> list:
+        labels = self.processed_dataframe.columns.tolist()
+        return labels
+
+    def removeUselessColumns(self, names: list) -> bool:
+        self.unprocessed_dataframe = self.unprocessed_dataframe.drop(columns=names)
+        print(self.unprocessed_dataframe.head())
         return True
 
 
