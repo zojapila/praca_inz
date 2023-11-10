@@ -48,12 +48,11 @@ class GeneticAlgorithm:
 
     def evaluationFunction(self, idx) -> float:
         # w artykule jest dopasowanie tylko jako 0 albo 1 ale chyba trzeba zrobic eksperyment - moze od 1 do 10 wellsee
-        # for i in self.data.attack_df
         result = 0
         idxs_to_check = [i for i in range(0, len(self.population[idx]))]
         for i in self.data.attack_df.itertuples():
             for column in idxs_to_check:
-                # label jest 4 od konca, przy sprawdzaniu mmusimy to pominać
+                # TODO label jest 4 od konca, przy sprawdzaniu mmusimy to pominać
                 # TODO albo column labels niech juz bedzie w ga wypełniane
 
                 if i[column + 2] == self.population[idx][column]:

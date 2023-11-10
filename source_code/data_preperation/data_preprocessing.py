@@ -11,6 +11,7 @@ class DataPreprocessing:
 
         self.min_max_column_vals: dict = {}
         self.conversion_dicts: dict = {}
+        self.column_labels: dict = {}
 
         self.loadDatabase(path)
         # used_features = ['id', 'srcip', "sport", 'dstip', 'dsport', 'sbytes', 'dbytes', 'state', 'dur', 'proto', 
@@ -114,6 +115,10 @@ class DataPreprocessing:
         self.unprocessed_dataframe = self.unprocessed_dataframe.drop(columns=names)
         print(self.unprocessed_dataframe.head())
         return True
+
+    def getColumnLabels(self):
+        pass
+
 
 
 
