@@ -1,8 +1,9 @@
 import random
+# from numpy import idxmax
 
 from data_preperation.data_preprocessing import DataPreprocessing
 # import pandas as pd
-# import numpy as np
+import numpy as np
 
 
 class GeneticAlgorithm:
@@ -12,6 +13,7 @@ class GeneticAlgorithm:
         self.max_iter = max_iter
         # self.population: list[list] = []
         self.population: dict = {}
+        # self.chromosome_length = self.getChromosomeLength()
         self.evaluation_results: dict = {}
         self.first_free_idx = 0
         # self.generateInitialPopulation()
@@ -19,9 +21,11 @@ class GeneticAlgorithm:
 
         # print(self.population)
 
-    def chromosomeCoding(self):
-        pass
-
+    '''
+    @brief: generates initial population using chosen method:
+    - version 1: random elements in previously calculated ranges
+    - version 2: random element from the given database is chosen
+    '''
     def generateInitialPopulation(self, pop_type: int = 1) -> bool:
         if pop_type == 1:
             # version 1 - create population with random elements in previously calculated ranges
@@ -44,24 +48,63 @@ class GeneticAlgorithm:
                         chromosome.append(val)
                 self.population[idx] = chromosome
         self.first_free_idx = self.population_size
+        print(len(self.population[0]))
         return True
 
-    def evaluationFunction(self, idx) -> float:
-        # w artykule jest dopasowanie tylko jako 0 albo 1 ale chyba trzeba zrobic eksperyment - moze od 1 do 10 wellsee
-        result = 0
-        idxs_to_check = [i for i in range(0, len(self.population[idx]))]
-        for i in self.data.attack_df.itertuples():
-            for column in idxs_to_check:
-                # TODO label jest 4 od konca, przy sprawdzaniu mmusimy to pominać
-                # TODO albo column labels niech juz bedzie w ga wypełniane
+    '''
+    @brief: evaluation function for given element od the population is being calculated 
+    '''
+    def evaluationFunction(self, idx, weights) -> float:
+        # version 1
+        # result = 0
+        # indexes_to_check = [i for i in range(0, len(self.population[idx]))]
+        # for i in self.data.attack_df.itertuples():
+        #     for column in indexes_to_check:
+        #         if i[column + 2] == self.population[idx][column]:
+        #             # print(self.data.column_labels[column])
+        #             result += weights[column]
+        #             indexes_to_check.remove(column)
+        # # TODO: LEARN WHAT THIS RANKING SHOULD BE
+        # ranking = 1  # temporary solution
+        # result = 1 - (result * ranking) / 100
+        #
+        # print(result)
+        # return result
 
+        # version 2
+        result = 0
+        idx_appears = []
+        quantity = [0 for _ in range(self.getChromosomeLength())]
+
+        for i in self.data.attack_df.itertuples():
+            for column in range(0, self.getChromosomeLength()):
                 if i[column + 2] == self.population[idx][column]:
+                    if column not in idx_appears:
+                        idx_appears.append(column)
                     # print(self.data.column_labels[column])
-                    result += 1
-                    idxs_to_check.remove(column)
+                    quantity[column] += 1
+                    # result += weights[column]
+                    # indexes_to_check.remove(column)
+
             # print(i[])
+        result = len(idx_appears)
+        # TODO: LEARN WHAT THIS RANKING SHOULD BE
+        ranking = 1  # temporary solution
+        x = 0
+        for i in quantity:
+            x += i
+        # x += [i for i in quantity]
+        result = x - (result * ranking) / 100
+        print(quantity.index(max(quantity)))
         # print(result)
         return result
+
+    def generateWeights(self, rand: bool = False) -> list:
+        weights = []
+        if rand:
+            for i in range(0, self.getChromosomeLength()):
+                weights.append(random.randint(1, 15))
+        return weights
 
     def mutation(self, idx: int):
         elem_to_be_mutated = random.randint(0, len(self.population[idx]) - 1)
@@ -76,7 +119,8 @@ class GeneticAlgorithm:
         return True
 
     def selection(self):
-        pass
+
+        return True
 
     def crossing(self, id1: int, id2: int) -> bool:
         point_of_crossing = random.randint(1, len(self.population[id1]))
@@ -86,15 +130,27 @@ class GeneticAlgorithm:
         child2 = [self.population[id2][i] for i in range(0, point_of_crossing)]
         for i in range(point_of_crossing, len(self.population[id2])):
             child2.append(self.population[id1])
-        self.population[self.first_free_idx] = child1
 
+        self.population[self.first_free_idx] = child1
         self.population[self.first_free_idx + 1] = child2
         self.first_free_idx += 2
         return True
 
+    def getChromosomeLength(self) -> int:
+        result = len(self.data.column_labels) - 2
+        # print(result)
+        # return len(self.population[])
+        return result
+
     def geneticAlgotrithmLoop(self):
+        # generate initial population
         self.generateInitialPopulation()
+        # evaluate initial population
         for keys, _ in self.population.items():
-            self.evaluation_results[keys] = self.evaluationFunction(keys)
+            self.evaluation_results[keys] = self.evaluationFunction(keys, self.generateWeights(True))
+        # make selection
+        self.selection()
+        # Todo: evaluate, select, cross in a loop
+
 
         # for i in range(0, self.max_iter):

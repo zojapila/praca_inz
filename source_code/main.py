@@ -3,14 +3,17 @@ import ga.genetic_algorithm as ga
 
 
 training_data = "D:/studia/inzynierka/unsw_nb15/UNSW_NB15_training-set.csv"
+work_computer = "C:/praca_inz/source_code/praca_inz-master/source_code/UNSW_NB15_training-set.csv"
 processed_data = preprocessing.DataPreprocessing(training_data)
-print(processed_data.processed_dataframe.head())
-# print(processed_data.column_labels)
-# for i in processed_data.column_labels:
-#     print(i)
-# print(processed_data.min_max_column_vals)
+# processed_data = preprocessing.DataPreprocessing(work_computer)
+
+# print(processed_data.processed_dataframe.info())
+# print(processed_data.unprocessed_dataframe['label'].value_counts(normalize=True))
+print(processed_data.processed_dataframe['ct_flw_http_mthd'].value_counts(normalize=True))
+print(processed_data.attack_df['ct_flw_http_mthd'].value_counts(normalize=True))
+# print(processed_data.normal_df.info())
 
 genetic_algorithm = ga.GeneticAlgorithm(processed_data, 10)
 genetic_algorithm.geneticAlgotrithmLoop()
-print("dlugosc chromosomu:", len(genetic_algorithm.population[1]))
+# print("chromosome length:", len(genetic_algorithm.population[1]))
 
