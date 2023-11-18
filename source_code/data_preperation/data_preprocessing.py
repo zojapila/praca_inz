@@ -116,7 +116,7 @@ class DataPreprocessing:
     def removeStringColumns(self) -> bool:
         for column, dtype in self.processed_dataframe.dtypes.items():
             if dtype not in ['int64', 'float64']:
-                self.processed_dataframe.drop(column, axis = 'columns', inplace=True)
+                self.processed_dataframe.drop(column, axis='columns', inplace=True)
         return True
 
     '''

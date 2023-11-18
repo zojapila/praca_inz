@@ -7,7 +7,8 @@ from data_preperation.data_preprocessing import DataPreprocessing
 
 
 class GeneticAlgorithm:
-    def __init__(self, data: DataPreprocessing, initial_population_size: int = 100, max_iter: int = 100) -> None:
+    def __init__(self, data: DataPreprocessing, initial_population_size: int = 100, max_iter: int = 100,
+                 mutation_probability: float = 0.4) -> None:
         self.population_size: int = initial_population_size
         self.data: DataPreprocessing = data
         self.max_iter = max_iter
@@ -15,7 +16,8 @@ class GeneticAlgorithm:
         self.column_list = data.column_labels
         self.column_list.remove('id')
         self.column_list.remove('label')
-        self.weights = self.generateWeights(True)
+        self.weights = []
+        self.mutation_probability = mutation_probability
 
         self.population: dict = {}
         self.evaluation_results: list = []
@@ -88,20 +90,21 @@ class GeneticAlgorithm:
         result = len(idx_appears)
         # TODO: LEARN WHAT THIS RANKING SHOULD BE
         ranking = 1  # temporary solution
-        x = 0
-        for i in quantity:
-            x += i
+        x = sum(quantity)
         # x += [i for i in quantity]
         result = x - (result * ranking) / 100
         # print(self.column_list[quantity.index(max(quantity))])
         return result
 
     def generateWeights(self, rand: bool = False) -> list:
-        weights = []
+        # weights = []
+        k = self.getChromosomeLength()
+        print(k)
         if rand:
-            for i in range(0, self.getChromosomeLength()):
-                weights.append(random.randint(1, 15))
-        return weights
+            weights = random.sample(population=[_ for _ in range(1, 37)], k=k)
+            return weights
+        else:
+            pass
 
     def mutation(self, idx: int):
         elem_to_be_mutated = random.randint(0, len(self.population[idx]) - 1)
@@ -118,9 +121,16 @@ class GeneticAlgorithm:
         self.evaluation_results = sorted(self.evaluation_results, key=lambda x: x[1],
                                          reverse=True)[:int(self.population_size*0.6)]
         # print(self.evaluation_results)
-        pairs_to_be_crossed = [(self.evaluation_results[random.randint(0, len(self.evaluation_results)-1)][0],
-                                self.evaluation_results[random.randint(0, len(self.evaluation_results)-1)][0])
-                               for _ in range(self.population_size - len(self.evaluation_results))]
+        pairs_to_be_crossed = []
+        for _ in range(self.population_size - len(self.evaluation_results)):
+            p1 = p2 = self.evaluation_results[random.randint(0, len(self.evaluation_results)-1)][0]
+            while p1 == p2:
+                p2 = self.evaluation_results[random.randint(0, len(self.evaluation_results)-1)][0]
+            pairs_to_be_crossed.append((p1, p2))
+
+        # pairs_to_be_crossed = [(self.evaluation_results[random.randint(0, len(self.evaluation_results)-1)][0],
+        #                         self.evaluation_results[random.randint(0, len(self.evaluation_results)-1)][0])
+        #                        for _ in range(self.population_size - len(self.evaluation_results))]
         # (random.randint(0, n-1), random.randint(0, n-1)) for _ in range(x)
         for pairs in pairs_to_be_crossed:
             self.crossing(pairs[0], pairs[1])
@@ -128,32 +138,35 @@ class GeneticAlgorithm:
         return True
 
     def crossing(self, id1: int, id2: int) -> bool:
-        point_of_crossing = random.randint(1, len(self.population[id1]))
+        point_of_crossing = random.randint(2, self.getChromosomeLength() - 3 )
         child1 = [self.population[id1][i] for i in range(0, point_of_crossing)]
         for i in range(point_of_crossing, len(self.population[id2])):
             child1.append(self.population[id2][i])
         self.population[self.first_free_idx] = child1
+        if random.random() <= self.mutation_probability:
+            self.mutation(self.first_free_idx)
         self.evaluation_results.append((self.first_free_idx, self.evaluationFunction(self.first_free_idx)))
         self.first_free_idx += 1
         return True
 
     def getChromosomeLength(self) -> int:
         result = len(self.data.column_labels) - 2
-        # print(result)
-        # return len(self.population[])
         return result
 
     def geneticAlgorithmLoop(self):
         # generate initial population
         self.generateInitialPopulation()
+        self.weights = self.generateWeights(True)
         # evaluate initial population
         for keys, _ in self.population.items():
             self.evaluation_results.append((keys, self.evaluationFunction(keys)))
         # make selection
         for i in range(self.max_iter):
             self.selection()
-            if i == self.max_iter - 1 or i == 1:
+            print(i)
+            if i == 0:
                 print(self.evaluation_results)
-        # Todo: evaluate, select, cross in a loop
+        print(sorted(self.evaluation_results, key=lambda x: x[1], reverse=True))
+
 
         # for i in range(0, self.max_iter):
