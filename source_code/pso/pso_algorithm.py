@@ -12,12 +12,14 @@ class ParticleSwarmOptimization:
         self.data = self.data.drop(labels=["id"], axis=1)
         self.unlabeled_data = None
         self.database_size = self.data.shape[0]
-        self.population = []
+        self.x_i = []
+        self.v_i = []
         self.k_table = [0 for _ in range(population_size)]
         self.fitness_table = [0 for _ in range(population_size)]
         self.x_table = []
         self.v_table = []
         self.x_best_table = []
+        self.x_global_best = None
 
     def normalization(self):
         scaler = MinMaxScaler()
@@ -28,9 +30,18 @@ class ParticleSwarmOptimization:
     def generateInitialPopulation(self):
         x1_min, x2_min = 0, 0
         x1_max, x2_max = self.database_size - 1, 1
-        self.population = [(random.randint(x1_min, x1_max), random.random()) for _ in range(self.population_size)]
+        v1_min = -10
+        v1_max = 10
+        v2_min = -1
+        v2_max = 1
+        self.x_i = [(random.randint(x1_min, x1_max), random.random()) for _ in range(self.population_size)]
+        self.v_i = [(random.uniform(v1_min, v1_max), random.uniform(v2_min, v2_max))
+                    for _ in range(self.population_size)]
+        for i in self.x_i:
+            self.x_best_table.append((i, 0))
 
     def computeK(self, point_id: int, r: float) -> int:
+        # todo: no i co tera
         k = 0
         for index, row in self.unlabeled_data.iterrows():
             if index != point_id:
@@ -42,46 +53,65 @@ class ParticleSwarmOptimization:
 
     def saveToCsvComputing(self):
         data = {}
-        for i in range(self.database_size):
+        for i in range(291, 300):
             if i % 10 != 0:
                 data[i] = []
                 for index, row in self.unlabeled_data.iterrows():
                     diff = np.subtract(self.unlabeled_data.iloc[i], row)
                     dist = np.sum(np.power(diff, 2))
                     data[i].append(dist)
+                print(i)
             else:
+                data[i] = []
+                for index, row in self.unlabeled_data.iterrows():
+                    diff = np.subtract(self.unlabeled_data.iloc[i], row)
+                    dist = np.sum(np.power(diff, 2))
+                    data[i].append(dist)
+                print(i)
                 df = pd.DataFrame(data)
                 df.to_csv(f'datafile{i}.csv', index=False)
                 data = {}
 
-            print(i)
-
-
-
-
     def calculateFitnessFunction(self, index: int) -> float:
         alpha = 0.05 * self.database_size
-        fit = (((alpha/(self.population[index][1] * self.k_table[index])) +
-               (self.k_table[index]/self.population[index][1])) +
+        fit = (((alpha / (self.x_i[index][1] * self.k_table[index])) +
+                (self.k_table[index] / self.x_i[index][1])) +
                (self.k_table[index]/(self.database_size - self.k_table[index])))
         return fit
 
-    def calculateSwarmBest(self):
-        pass
+    def updatePersonalBest(self, index: int):
+        if self.fitness_table[index] > self.x_best_table[index][1]:
+            self.x_best_table[index] = (self.x_i[index], self.fitness_table[index])
 
-    def calculateVelocity(self):
-        pass
+    def calculateVelocityAndPosition(self):
+        phi1 = 1
+        phi2 = 1
+        c1 = 1
+        c2 = 1
+        # todo: jak zrobic zeby nie byl r wiekszy od 1
+        for i in range(self.population_size):
+            self.v_i[i] = (0.729 * (self.v_i[i][0] + phi1 * c1 * (self.x_best_table[i][0][0] - self.x_i[i][0]) +
+                                    phi2 * c2 * (self.x_global_best[0][0] - self.x_i[i][0])),
+                           0.729 * (self.v_i[i][1] + phi1 * c1 * (self.x_best_table[i][0][1] - self.x_i[i][1]) +
+                                    phi2 * c2 * (self.x_global_best[0][1] - self.x_i[i][1])))
+            self. x_i[i] = (round(self.x_i[i][0] + self.v_i[i][0]), self.x_i[i][1] + self.v_i[i][1])
 
-    def calculatePosition(self):
-        pass
+    def getSwarmBest(self):
+        self.x_global_best = max(self.x_best_table, key=lambda x: x[1])
 
     def algorithmLoop(self):
         self.normalization()
         print(self.data.head())
         self.generateInitialPopulation()
-        self.saveToCsvComputing()
-        # for i in range(len(self.population)):
-        #     self.k_table[i] = self.computeK(self.population[i][0], self.population[i][1])
-            # self.fitness_table[i] = self.calculateFitnessFunction(i)
-
-            # print(self.k_table[i], self.fitness_table[i])
+        # self.saveToCsvComputing()
+        for i in range(self.population_size):
+            self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
+            self.fitness_table[i] = self.calculateFitnessFunction(i)
+            self.updatePersonalBest(i)
+            print(i)
+        print(self.fitness_table)
+        self.getSwarmBest()
+        print(self.x_global_best)
+        self.calculateVelocityAndPosition()
+        print(self.x_i)
+        print(self.v_i)

@@ -54,7 +54,7 @@ class DataPreprocessing:
         self.original_df = pd.read_csv(path)
         self.unprocessed_dataframe = pd.read_csv(path)
         # for testing purposes
-        # self.unprocessed_dataframe = self.unprocessed_dataframe.head(30000)
+        self.unprocessed_dataframe = self.unprocessed_dataframe.head(5000)
         return True
 
     '''

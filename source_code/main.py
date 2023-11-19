@@ -13,6 +13,6 @@ processed_data = preprocessing.DataPreprocessing(training_data)
 # genetic_algorithm.geneticAlgorithmLoop()
 
 #pso
-pso = pso.ParticleSwarmOptimization(processed_data)
+pso = pso.ParticleSwarmOptimization(processed_data, population_size=20)
 pso.algorithmLoop()
 
