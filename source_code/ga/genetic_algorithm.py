@@ -101,7 +101,7 @@ class GeneticAlgorithm:
         k = self.getChromosomeLength()
         print(k)
         if rand:
-            weights = random.sample(population=[_ for _ in range(1, 37)], k=k)
+            weights = random.sample(population=[_ for _ in range(1, k)], k=k)
             return weights
         else:
             pass

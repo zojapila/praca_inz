@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 class ParticleSwarmOptimization:
-    def __init__(self, data: DataPreprocessing, population_size: int = 100):
+    def __init__(self, data: DataPreprocessing, population_size: int = 100, max_iter = 100):
         self.population_size = population_size
         self.data = data.processed_dataframe
         self.data = self.data.drop(labels=["id"], axis=1)
@@ -20,6 +20,7 @@ class ParticleSwarmOptimization:
         self.v_table = []
         self.x_best_table = []
         self.x_global_best = None
+        self.max_iter = max_iter
 
     def normalization(self):
         scaler = MinMaxScaler()
@@ -74,9 +75,15 @@ class ParticleSwarmOptimization:
 
     def calculateFitnessFunction(self, index: int) -> float:
         alpha = 0.05 * self.database_size
-        fit = (((alpha / (self.x_i[index][1] * self.k_table[index])) +
-                (self.k_table[index] / self.x_i[index][1])) +
-               (self.k_table[index]/(self.database_size - self.k_table[index])))
+        if self.x_i[index][1] != 0 and self.k_table[index] != 0:
+            fit = (((alpha / (self.x_i[index][1] * self.k_table[index])) +
+                    (self.k_table[index] / self.x_i[index][1])) +
+                   (self.k_table[index]/(self.database_size - self.k_table[index])))
+        elif self.x_i[index][1] != 0 and self.k_table[index] == 0:
+            fit = ((self.k_table[index] / self.x_i[index][1]) +
+                   (self.k_table[index] / (self.database_size - self.k_table[index])))
+        else:
+            fit = self.k_table[index]/(self.database_size - self.k_table[index])
         return fit
 
     def updatePersonalBest(self, index: int):
@@ -104,14 +111,16 @@ class ParticleSwarmOptimization:
         print(self.data.head())
         self.generateInitialPopulation()
         # self.saveToCsvComputing()
-        for i in range(self.population_size):
-            self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
-            self.fitness_table[i] = self.calculateFitnessFunction(i)
-            self.updatePersonalBest(i)
-            print(i)
-        print(self.fitness_table)
-        self.getSwarmBest()
+        for i in range(self.max_iter):
+            for i in range(self.population_size):
+                self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
+                self.fitness_table[i] = self.calculateFitnessFunction(i)
+                self.updatePersonalBest(i)
+                print(i)
+            print(self.fitness_table)
+            self.getSwarmBest()
+            print(self.x_global_best)
+            self.calculateVelocityAndPosition()
+            print(self.x_i)
+            print(self.v_i)
         print(self.x_global_best)
-        self.calculateVelocityAndPosition()
-        print(self.x_i)
-        print(self.v_i)
