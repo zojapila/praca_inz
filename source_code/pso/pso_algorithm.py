@@ -54,8 +54,9 @@ class ParticleSwarmOptimization:
 
     def saveToCsvComputing(self):
         data = {}
-        for i in range(291, 300):
-            if i % 10 != 0:
+        file_num = 1
+        for i in range(self.database_size):
+            if i % 500 != 0:
                 data[i] = []
                 for index, row in self.unlabeled_data.iterrows():
                     diff = np.subtract(self.unlabeled_data.iloc[i], row)
@@ -70,7 +71,8 @@ class ParticleSwarmOptimization:
                     data[i].append(dist)
                 print(i)
                 df = pd.DataFrame(data)
-                df.to_csv(f'datafile{i}.csv', index=False)
+                df.to_csv(f'datafile{file_num}.csv', index=False)
+                file_num += 1
                 data = {}
 
     def calculateFitnessFunction(self, index: int) -> float:
@@ -110,17 +112,5 @@ class ParticleSwarmOptimization:
         self.normalization()
         print(self.data.head())
         self.generateInitialPopulation()
-        # self.saveToCsvComputing()
-        for i in range(self.max_iter):
-            for i in range(self.population_size):
-                self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
-                self.fitness_table[i] = self.calculateFitnessFunction(i)
-                self.updatePersonalBest(i)
-                print(i)
-            print(self.fitness_table)
-            self.getSwarmBest()
-            print(self.x_global_best)
-            self.calculateVelocityAndPosition()
-            print(self.x_i)
-            print(self.v_i)
-        print(self.x_global_best)
+        self.saveToCsvComputing()
+
