@@ -1,0 +1,10 @@
+1. co powinnam zrobić z tym rankingiem?
+2. czy jeśli w pso wybieram sobie te wszystkie punkty to w którym miejscu należałoby uwzględnić czy to w ogóle są
+    ataki czy nie?
+3. Jak powinno wyglądać testowanie skutezności dla ga? czy po prostu ustalam sobie jakiś próg punktów od którego
+   funkcja ewaluacyjna uzna to połączenie za atak czy jest na to jakiś inny sposób?
+
+
+dodatkowo:
+4. Jak ograniczyć prędkości i r w funkcjach celu żeby nie wykraczały poza maksy? czy po prostu jeśli wychodzi to dać ją
+    na min albo max?
