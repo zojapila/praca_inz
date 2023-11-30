@@ -9,6 +9,7 @@ class ParticleSwarmOptimization:
     def __init__(self, data: DataPreprocessing, population_size: int = 100, max_iter: int = 100,
                  final_sol_num: int = 10):
         self.population_size = population_size
+        # self.data_unedited = data.processed_dataframe
         self.data = data.processed_dataframe
         self.data = self.data.drop(labels=["id"], axis=1)
         self.unlabeled_data = None
@@ -17,8 +18,8 @@ class ParticleSwarmOptimization:
         self.v_i = []
         self.k_table = [0 for _ in range(population_size)]
         self.fitness_table = [0 for _ in range(population_size)]
-        self.x_table = []
-        self.v_table = []
+        # self.x_table = []
+        # self.v_table = []
         self.x_best_table = []
         self.x_global_best = None
         self.max_iter = max_iter
@@ -130,11 +131,22 @@ class ParticleSwarmOptimization:
         self.x_global_best = max(self.x_best_table, key=lambda x: x[1])
 
     def getFinalSolution(self):
-        return sorted(range(len(self.x_table)), key=lambda x: x[1], reverse=True)[:self.final_sol_num]
+        print('x_table: ', self.x_best_table)
+        result_data = sorted(self.x_best_table, key=lambda x: x[1], reverse=True)[:self.final_sol_num]
+
+        # result_data = sorted(range(len(self.x_table)), key=lambda x: x[1], reverse=True)[:self.final_sol_num]
+        print('result data', result_data)
+        # wyżej zapis (ID, r), fit, chciałabym df z kolumną r
+        df1 = pd.DataFrame([i[0] for i in result_data], columns=['id', 'r'])
+        # print('result ids and rs', df1.head())
+        result_df = pd.merge(self.data, df1, left_index=True, right_on='id', how='inner')
+        result_df.to_csv("pso_results.csv", index=False)
+        return result_df
 
     def algorithmLoop(self):
         # generate initial population
         self.normalization()
+        print('data:')
         print(self.data.head())
         self.generateInitialPopulation()
         # self.saveToCsvComputing()
@@ -143,20 +155,23 @@ class ParticleSwarmOptimization:
                 self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
                 self.fitness_table[i] = self.calculateFitnessFunction(i)
                 self.updatePersonalBest(i)
-                print(i)
-            print(self.fitness_table)
+                # print(i)
+            # print(self.fitness_table)
             self.getSwarmBest()
-            print(self.x_global_best)
+            # print(self.x_global_best)
             self.calculateVelocityAndPosition()
             print(self.x_i)
-            print(self.v_i)
+            # print(self.v_i)
         # last element
         for i in range(self.population_size):
             self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
             self.fitness_table[i] = self.calculateFitnessFunction(i)
             self.updatePersonalBest(i)
             print(i)
-        print(self.fitness_table)
+
+        print("fit table", self.fitness_table)
         self.getSwarmBest()
-        print(self.x_global_best)
+
+        # print(self.x_global_best)
         self.final_solution = self.getFinalSolution()
+        print(self.final_solution.head())
