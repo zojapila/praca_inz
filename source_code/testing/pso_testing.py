@@ -27,7 +27,6 @@ class PSOTesting:
             diff = np.subtract(self.test_df_unlabeled.iloc[idx], row)
             dist = np.sum(np.power(diff, 2))
             if dist - (row['r'] ** 2) < 0:
-                # TODO: COS TU KURDE NIE DZIAŁA I NIE WIEM CO
                 if self.test_df.iloc[idx]['label'] == 1:
                     # print('jest moc')
                     self.positive += 1
@@ -40,36 +39,28 @@ class PSOTesting:
                     break
             else:
                 if self.test_df.iloc[idx]['label'] == 1:
-                    self.false_normal += 1
-                else:
-                    self.negative += 1
+                    flag = 3
+                    # self.false_normal += 1
+                # else:
+                    # self.negative += 1
+        if flag == 0:
+            self.negative += 1
+        elif flag == 3:
+            self.false_normal += 1
 
-
-
-            #     if dist <= r ** 2:
-            #         k += 1
-            # return k
-        # print(self.test_df_unlabeled.iloc[idx])
-        # print(self.pso_results.iloc[idx])
-
-    def prints(self):
+    def testPSO(self):
         # print('test df\n', self.test_df.head())
         # print('pso results\n', self.pso_results.head())
-        for i in range(72000, 72800):
+        for i in range(70000, 80800):
             self.checkIfAnomaly(i)
         print('positive', self.positive)
         print('false positive', self.false_attack)
         print('negative', self.negative)
         print('false negative', self.false_normal)
+        print('total = ', self.positive + self.false_attack + self.negative + self.false_normal)
+        print('accuracy = ', (self.positive + self.negative) / (self.positive + self.false_attack +
+                                                                self.negative + self.false_normal) * 100, '%')
 
 
-
-
-
-'''
-plan jest taki, że pso_results to df z wszystkimi parametrami z oryginalnej df oraz r. 
-jak już to mam to dla każdego elementu z bazy danych obliczam odległości do każdego wyniku i jesli jest < r to anomalia
-później należałoby wyznaczyć sobie skuteczność tego
-'''
 
 

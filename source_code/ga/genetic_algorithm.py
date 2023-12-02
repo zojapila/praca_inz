@@ -1,4 +1,7 @@
 import random
+
+import pandas as pd
+
 # from numpy import idxmax
 
 from data_preperation.data_preprocessing import DataPreprocessing
@@ -8,7 +11,7 @@ from data_preperation.data_preprocessing import DataPreprocessing
 
 class GeneticAlgorithm:
     def __init__(self, data: DataPreprocessing, initial_population_size: int = 100, max_iter: int = 100,
-                 mutation_probability: float = 0.4) -> None:
+                 mutation_probability: float = 0.4, num_of_final_sol=20) -> None:
         self.population_size: int = initial_population_size
         self.data: DataPreprocessing = data
         self.max_iter = max_iter
@@ -22,6 +25,7 @@ class GeneticAlgorithm:
         self.population: dict = {}
         self.evaluation_results: list = []
         self.first_free_idx = 0
+        self.num_of_final_sol = num_of_final_sol
         # self.generateInitialPopulation()
         # self.evaluationFunction(1)
 
@@ -101,7 +105,7 @@ class GeneticAlgorithm:
         k = self.getChromosomeLength()
         print(k)
         if rand:
-            weights = random.sample(population=[_ for _ in range(1, k )], k=k)
+            weights = random.sample(population=[_ for _ in range(1, k + 1)], k=k)
             return weights
         else:
             pass
@@ -153,6 +157,13 @@ class GeneticAlgorithm:
         result = len(self.data.column_labels) - 2
         return result
 
+    def getFinalSolution(self):
+        solution_idxs = sorted(self.evaluation_results, key=lambda x: x[1], reverse=True)[:self.num_of_final_sol]
+        solution = [self.population[idx] for idx, _ in solution_idxs]
+        df_solution = pd.DataFrame(solution, columns=self.column_list)
+        df_solution.to_csv('ga_results.csv', index=False)
+        return df_solution
+
     def geneticAlgorithmLoop(self):
         # generate initial population
         self.generateInitialPopulation()
@@ -167,6 +178,8 @@ class GeneticAlgorithm:
             if i == 0:
                 print(self.evaluation_results)
         print(sorted(self.evaluation_results, key=lambda x: x[1], reverse=True))
+        return self.getFinalSolution()
+
 
 
         # for i in range(0, self.max_iter):
