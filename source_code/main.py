@@ -12,13 +12,14 @@ processed_data = preprocessing.DataPreprocessing(training_data)
 # processed_data = preprocessing.DataPreprocessing(work_computer)
 
 # ga
-genetic_algorithm = ga.GeneticAlgorithm(processed_data, initial_population_size=200, max_iter=10)
-result = genetic_algorithm.geneticAlgorithmLoop()
-print(result.head())
+# genetic_algorithm = ga.GeneticAlgorithm(processed_data, initial_population_size=200, max_iter=10)
+# result = genetic_algorithm.geneticAlgorithmLoop()
+# print(result.head())
 #pso
-# print(processed_data.processed_dataframe.head())
-# pso = pso.ParticleSwarmOptimization(processed_data, population_size=20, max_iter=2)
-# pso.algorithmLoop()
+print(processed_data.processed_dataframe.head())
+pso = pso.ParticleSwarmOptimization(processed_data, population_size=20, max_iter=2)
+pso.normalization()
+pso.algorithmLoop()
 
 # results_pso = test.PSOTesting(testing_data, pso_results)
 # results_pso.test_pso()

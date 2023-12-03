@@ -30,6 +30,7 @@ class ParticleSwarmOptimization:
         scaler = MinMaxScaler()
         self.data = pd.DataFrame(scaler.fit_transform(self.data), columns=self.data.columns)
         self.unlabeled_data = self.data.drop(labels=['label'], axis=1)
+        self.unlabeled_data.to_csv('pso_df.csv', index=False)
 
     # population as if (ID, r)
     '''
@@ -116,13 +117,14 @@ class ParticleSwarmOptimization:
         phi2 = 1
         c1 = 1
         c2 = 1
-        # todo: r is sometimes bigger than 1 and how to fix it
         for i in range(self.population_size):
             self.v_i[i] = (0.729 * (self.v_i[i][0] + phi1 * c1 * (self.x_best_table[i][0][0] - self.x_i[i][0]) +
                                     phi2 * c2 * (self.x_global_best[0][0] - self.x_i[i][0])),
                            0.729 * (self.v_i[i][1] + phi1 * c1 * (self.x_best_table[i][0][1] - self.x_i[i][1]) +
                                     phi2 * c2 * (self.x_global_best[0][1] - self.x_i[i][1])))
-            self. x_i[i] = (round(self.x_i[i][0] + self.v_i[i][0]), self.x_i[i][1] + self.v_i[i][1])
+            self. x_i[i] = (round(self.x_i[i][0] + self.v_i[i][0]),
+                            self.x_i[i][1] + self.v_i[i][1] if self.x_i[i][1] + self.v_i[i][1] <= 1 else 1)
+
 
     '''
     @brief: getter for the element with the best position

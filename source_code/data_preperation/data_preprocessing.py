@@ -4,7 +4,7 @@ import pandas as pd
 
 
 class DataPreprocessing:
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, alg_type: str = 'pso') -> None:
         self.original_df: pd.DataFrame = None
         self.unprocessed_dataframe: pd.DataFrame = None
         self.processed_dataframe: pd.DataFrame = None
@@ -14,10 +14,14 @@ class DataPreprocessing:
         self.column_labels: dict = {}
 
         self.loadDatabase(path)
-        # used_features = ['id', 'srcip', "sport", 'dstip', 'dsport', 'sbytes', 'dbytes', 'state', 'dur', 'proto', 
-        #                  'service', 'trans_depth', 'attack_cat', 'label']
-        self.removeUselessColumns(['sbytes', 'dbytes', 'is_ftp_login',
-                                   'swin', 'dwin', 'trans_depth'])
+        if alg_type == 'pso':
+            self.removeUselessColumns(['sbytes', 'dbytes', 'is_ftp_login',
+                                       'swin', 'dwin', 'trans_depth'])
+        else:
+            self.removeUselessColumns(['sbytes', 'dbytes', 'is_ftp_login', 'sjit', 'djit', 'stcpb', 'dtcpb',
+                                       'tcprtt', 'ackdat', 'swin', 'dwin', 'trans_depth', 'dur', 'rate', 'sload',
+                                       'dload', 'sinpkt', 'dinpkt', 'synack'])
+
         self.selectFeatures()
         self.convertStringtoInt(True)
         self.removeStringColumns()
@@ -33,7 +37,7 @@ class DataPreprocessing:
         self.original_df = pd.read_csv(path)
         self.unprocessed_dataframe = pd.read_csv(path)
         # for testing purposes
-        self.unprocessed_dataframe = self.unprocessed_dataframe.head(5000)
+        # self.unprocessed_dataframe = self.unprocessed_dataframe.head(5000)
         return True
 
     '''
