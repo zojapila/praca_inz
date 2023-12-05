@@ -58,7 +58,7 @@ class GeneticAlgorithm:
                         chromosome.append(val)
                 self.population[idx] = chromosome
         self.first_free_idx = self.population_size
-        print(len(self.population[0]))
+        # print(len(self.population[0]))
         return True
 
     '''
@@ -103,12 +103,12 @@ class GeneticAlgorithm:
     def generateWeights(self, rand: bool = False) -> list:
         # weights = []
         k = self.getChromosomeLength()
-        print(k)
+        # print(k)
         if rand:
             weights = random.sample(population=[_ for _ in range(1, k + 1)], k=k)
             return weights
         else:
-            pass
+            weights = [3, 3, 3, 3, 2, 2, 3, 3, 1, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 3, 3]
 
     def mutation(self, idx: int):
         elem_to_be_mutated = random.randint(0, len(self.population[idx]) - 1)
@@ -167,7 +167,7 @@ class GeneticAlgorithm:
     def geneticAlgorithmLoop(self):
         # generate initial population
         self.generateInitialPopulation()
-        self.weights = self.generateWeights(True)
+        self.weights = self.generateWeights(False)
         # evaluate initial population
         for keys, _ in self.population.items():
             self.evaluation_results.append((keys, self.evaluationFunction(keys)))

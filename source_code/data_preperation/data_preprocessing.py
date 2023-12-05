@@ -56,6 +56,15 @@ class DataPreprocessing:
         else:
             # print(self.processed_dataframe.head())
             for column_name, dtype in self.processed_dataframe.dtypes.items():
+                if column_name == 'sttl' or column_name == 'dttl':
+                    new_column_name = column_name + "_converted"
+                    conversion_vals = self.processed_dataframe[column_name].unique()
+                    # dictionary converting string to int
+                    conversion_dict = {string: numer for numer, string in enumerate(conversion_vals)}
+                    # adding new column
+                    self.processed_dataframe[new_column_name] = \
+                        self.processed_dataframe[column_name].map(conversion_dict)
+                    self.conversion_dicts[new_column_name] = conversion_dict
                 # print(column_name)
                 if dtype not in ['int64', 'float64'] and column_name != "attack_cat":
                     new_column_name = column_name + "_converted"
@@ -98,7 +107,7 @@ class DataPreprocessing:
     '''
     def removeStringColumns(self) -> bool:
         for column, dtype in self.processed_dataframe.dtypes.items():
-            if dtype not in ['int64', 'float64']:
+            if dtype not in ['int64', 'float64'] or column == 'dttl' or column == 'sttl':
                 self.processed_dataframe.drop(column, axis='columns', inplace=True)
         return True
 
