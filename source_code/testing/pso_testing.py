@@ -51,7 +51,7 @@ class PSOTesting:
     def testPSO(self):
         # print('test df\n', self.test_df.head())
         # print('pso results\n', self.pso_results.head())
-        for i in range(70000, 80800):
+        for i in range(self.test_df.shape[0]):
             self.checkIfAnomaly(i)
         print('positive', self.positive)
         print('false positive', self.false_attack)
