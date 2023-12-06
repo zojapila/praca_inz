@@ -1,6 +1,6 @@
 import data_preperation.data_preprocessing as preprocessing
 import ga.genetic_algorithm as ga
-import pso.pso_algorithm as pso
+import pso.pso2 as pso2
 
 
 training_data = "D:/studia/inzynierka/unsw_nb15/UNSW_NB15_training-set.csv"
@@ -13,5 +13,7 @@ processed_data = preprocessing.DataPreprocessing(work_computer)
 # genetic_algorithm.geneticAlgorithmLoop()
 
 #pso
-pso = pso.ParticleSwarmOptimization(processed_data, population_size=10)
+# pso = pso2.ParticleSwarmOptimization2(processed_data, population_size=10, x=57300)
+pso = pso2.ParticleSwarmOptimization2(processed_data, population_size=10, x=76600)
 pso.algorithmLoop()
+pso.saveToCsvComputing(595, 6)

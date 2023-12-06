@@ -5,8 +5,8 @@ from data_preperation.data_preprocessing import DataPreprocessing
 from sklearn.preprocessing import MinMaxScaler
 
 
-class ParticleSwarmOptimization:
-    def __init__(self, data: DataPreprocessing, population_size: int = 100, max_iter = 100):
+class ParticleSwarmOptimization2:
+    def __init__(self, data: DataPreprocessing, population_size: int = 100, x=0, max_iter: int = 100):
         self.population_size = population_size
         self.data = data.processed_dataframe
         self.data = self.data.drop(labels=["id"], axis=1)
@@ -21,6 +21,7 @@ class ParticleSwarmOptimization:
         self.x_best_table = []
         self.x_global_best = None
         self.max_iter = max_iter
+        self.x = x
 
     def normalization(self):
         scaler = MinMaxScaler()
@@ -52,11 +53,12 @@ class ParticleSwarmOptimization:
                     k += 1
         return k
 
-    def saveToCsvComputing(self):
+    def saveToCsvComputing(self, filenum, quantity):
         data = {}
-        file_num = 825  # numer sety + 2
-        for i in range(82301, 82332):
-            if i != 82331:
+        file_num = int(filenum)  # numer sety + 2
+        # beginning in 30000
+        for i in range((filenum * 100) - 199, (filenum * 100) - 199 + (quantity*100)):
+            if i % 100 != 0:
                 data[i] = []
                 for index, row in self.unlabeled_data.iterrows():
                     diff = np.subtract(self.unlabeled_data.iloc[i], row)
@@ -113,5 +115,5 @@ class ParticleSwarmOptimization:
         self.normalization()
         print(self.data.head())
         self.generateInitialPopulation()
-        self.saveToCsvComputing()
+        # self.saveToCsvComputing()
 
