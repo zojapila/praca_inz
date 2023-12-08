@@ -19,23 +19,12 @@ def getDfPath(point_id: int) -> str:
     pass
 
 
-def computeK(point_id: int, r: float) -> int:
-    data_with_calc_dist = pd.read_csv(getDfPath(point_id))
-    # print(data_with_calc_dist.head())
-    k = 0
-    for index, row in data_with_calc_dist.iterrows():
-        if index != point_id:
-            if row[str(point_id)] <= r ** 2:
-                k += 1
-    print(k)
-    return k
-
-
 class ParticleSwarmOptimization:
     def __init__(self, data: DataPreprocessing, population_size: int = 100, max_iter: int = 100,
-                 final_sol_num: int = 10):
+                 final_sol_num: int = 10, filenum: int = 1):
         self.population_size = population_size
         # self.data_unedited = data.processed_dataframe
+        self.attack_df = data.attack_df
         self.data = data.processed_dataframe
         self.data = self.data.drop(labels=["id"], axis=1)
         self.unlabeled_data = None
@@ -52,6 +41,8 @@ class ParticleSwarmOptimization:
         self.final_sol_num = final_sol_num
         self.final_solution = []
         self.c = [random.random(), random.random()]
+        self.filenum = filenum
+        self.attack_id = self.getAttackRecordIds()
 
     def normalization(self):
         scaler = MinMaxScaler()
@@ -59,7 +50,24 @@ class ParticleSwarmOptimization:
         self.unlabeled_data = self.data.drop(labels=['label'], axis=1)
         self.unlabeled_data.to_csv('pso_df.csv', index=False)
 
-    # population as if (ID, r)
+    def getAttackRecordIds(self) -> list:
+        # print(self.attack_df.head())   # population as if (ID, r)
+        attack_id = self.attack_df['id'].tolist()
+        return attack_id
+
+    def computeK(self, point_id: int, r: float, ) -> int:
+        data_with_calc_dist = pd.read_csv(getDfPath(point_id))
+        # print(data_with_calc_dist.head())
+        k = 0
+        for index, row in data_with_calc_dist.iterrows():
+            if index in self.attack_id:
+                if index != point_id:
+                    if row[str(point_id)] <= r ** 2:
+                        k += 1
+        # print(k)
+        return k
+
+
     '''
     @brief: generate velocities and positions for initial population
     x_i are (ID, r)
@@ -81,26 +89,26 @@ class ParticleSwarmOptimization:
     '''
     @brief: function to generate databases with the distances between points
     '''
-    def saveToCsvComputing(self):
-        data = {}
-        for i in range(291, 300):
-            if i % 10 != 0:
-                data[i] = []
-                for index, row in self.unlabeled_data.iterrows():
-                    diff = np.subtract(self.unlabeled_data.iloc[i], row)
-                    dist = np.sum(np.power(diff, 2))
-                    data[i].append(dist)
-                print(i)
-            else:
-                data[i] = []
-                for index, row in self.unlabeled_data.iterrows():
-                    diff = np.subtract(self.unlabeled_data.iloc[i], row)
-                    dist = np.sum(np.power(diff, 2))
-                    data[i].append(dist)
-                print(i)
-                df = pd.DataFrame(data)
-                df.to_csv(f'datafile{i}.csv', index=False)
-                data = {}
+    # def saveToCsvComputing(self):
+    #     data = {}
+    #     for i in range(291, 300):
+    #         if i % 10 != 0:
+    #             data[i] = []
+    #             for index, row in self.unlabeled_data.iterrows():
+    #                 diff = np.subtract(self.unlabeled_data.iloc[i], row)
+    #                 dist = np.sum(np.power(diff, 2))
+    #                 data[i].append(dist)
+    #             # print(i)
+    #         else:
+    #             data[i] = []
+    #             for index, row in self.unlabeled_data.iterrows():
+    #                 diff = np.subtract(self.unlabeled_data.iloc[i], row)
+    #                 dist = np.sum(np.power(diff, 2))
+    #                 data[i].append(dist)
+    #             # print(i)
+    #             df = pd.DataFrame(data)
+    #             df.to_csv(f'datafile{i}.csv', index=False)
+    #             data = {}
 
     '''
     @brief: calculate fitness function for the element with given index
@@ -162,19 +170,19 @@ class ParticleSwarmOptimization:
         df1 = pd.DataFrame([i[0] for i in result_data], columns=['id', 'r'])
         # print('result ids and rs', df1.head())
         result_df = pd.merge(self.data, df1, left_index=True, right_on='id', how='inner')
-        result_df.to_csv("pso_results1.csv", index=False)
+        result_df.to_csv("pso_results"+ str(self.filenum) + ".csv", index=False)
         return result_df
 
     def algorithmLoop(self):
         # generate initial population
         self.normalization()
-        print('data:')
-        print(self.data.head())
+        # print('data:')
+        # print(self.data.head())
         self.generateInitialPopulation()
         # self.saveToCsvComputing()
         for _ in range(self.max_iter - 1):
             for i in range(self.population_size):
-                self.k_table[i] = computeK(self.x_i[i][0], self.x_i[i][1])
+                self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
                 self.fitness_table[i] = self.calculateFitnessFunction(i)
                 self.updatePersonalBest(i)
                 # print(i)
@@ -182,16 +190,16 @@ class ParticleSwarmOptimization:
             self.getSwarmBest()
             # print(self.x_global_best)
             self.calculateVelocityAndPosition()
-            print(self.x_i)
+            # print(self.x_i)
             # print(self.v_i)
         # last element
         for i in range(self.population_size):
-            self.k_table[i] = computeK(self.x_i[i][0], self.x_i[i][1])
+            self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
             self.fitness_table[i] = self.calculateFitnessFunction(i)
             self.updatePersonalBest(i)
-            print(i)
+            # print(i)
 
-        print("fit table", self.fitness_table)
+        # print("fit table", self.fitness_table)
         self.getSwarmBest()
 
         # print(self.x_global_best)
