@@ -89,10 +89,10 @@ class GeneticAlgorithm:
                         idx_appears.append(column)
                     # print(self.data.column_labels[column])
                     quantity[column] += 1
+
                     # result += weights[column]
                     # indexes_to_check.remove(column)
-        result = len(idx_appears)
-        # TODO: LEARN WHAT THIS RANKING SHOULD BE
+        result = sum([i * self.weights[i] for i in idx_appears])
         ranking = 1  # temporary solution
         x = sum(quantity)
         # x += [i for i in quantity]
@@ -109,6 +109,7 @@ class GeneticAlgorithm:
             return weights
         else:
             weights = [3, 3, 3, 3, 2, 2, 3, 3, 1, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 3, 3]
+        return weights
 
     def mutation(self, idx: int):
         elem_to_be_mutated = random.randint(0, len(self.population[idx]) - 1)
@@ -142,7 +143,7 @@ class GeneticAlgorithm:
         return True
 
     def crossing(self, id1: int, id2: int) -> bool:
-        point_of_crossing = random.randint(2, self.getChromosomeLength() - 3 )
+        point_of_crossing = random.randint(2, self.getChromosomeLength() - 3)
         child1 = [self.population[id1][i] for i in range(0, point_of_crossing)]
         for i in range(point_of_crossing, len(self.population[id2])):
             child1.append(self.population[id2][i])
@@ -179,7 +180,4 @@ class GeneticAlgorithm:
                 print(self.evaluation_results)
         print(sorted(self.evaluation_results, key=lambda x: x[1], reverse=True))
         return self.getFinalSolution()
-
-
-
         # for i in range(0, self.max_iter):
