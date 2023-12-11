@@ -8,7 +8,7 @@ import time
 # training_data = "D:/studia/inzynierka/unsw_nb15/UNSW_NB15_training-set.csv"
 work_computer = "C:/praca_inz/source_code/UNSW_NB15_training-set.csv"
 testing_data = "C:/praca_inz/UNSW_NB15_testing-set.csv"
-pso_results = "C:/praca_inz/source_code/pso_results23.csv"
+pso_results = "C:/praca_inz/source_code/pso_results17.csv"
 # processed_data = preprocessing.DataPreprocessing(training_data, alg_type='ga')
 processed_data = preprocessing.DataPreprocessing(work_computer)
 
@@ -19,8 +19,7 @@ processed_data = preprocessing.DataPreprocessing(work_computer)
 # pso
 # print(processed_data.processed_dataframe.head())
 start = time.time()
-pso = pso.ParticleSwarmOptimization(processed_data, population_size=100, max_iter=15, final_sol_num=50, filenum=23)
-print(pso.attack_df.head())
+pso = pso.ParticleSwarmOptimization(processed_data, population_size=100, max_iter=40, final_sol_num=50, filenum=17)
 # # pso.normalization()
 pso.algorithmLoop()
 end = time.time()
