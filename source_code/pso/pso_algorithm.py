@@ -23,6 +23,7 @@ class ParticleSwarmOptimization:
     def __init__(self, data: DataPreprocessing, population_size: int = 100, max_iter: int = 100,
                  final_sol_num: int = 10, filenum: int = 1):
         self.population_size = population_size
+        self.columns = data.column_labels
         # self.data_unedited = data.processed_dataframe
         self.attack_df = data.attack_df
         self.data = data.processed_dataframe
