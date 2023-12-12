@@ -162,7 +162,7 @@ class GeneticAlgorithm:
         solution_idxs = sorted(self.evaluation_results, key=lambda x: x[1], reverse=True)[:self.num_of_final_sol]
         solution = [self.population[idx] for idx, _ in solution_idxs]
         df_solution = pd.DataFrame(solution, columns=self.column_list)
-        df_solution.to_csv('ga_results.csv', index=False)
+        df_solution.to_csv('ga_results3.csv', index=False)
         return df_solution
 
     def geneticAlgorithmLoop(self):

@@ -7,8 +7,9 @@ import pandas as pd
 
 class GATesting:
     def __init__(self, test_df_path: str, ga_results_path: str):
-        self.test_data_processed = data_prep.DataPreprocessing(test_df_path)
+        self.test_data_processed = data_prep.DataPreprocessing(test_df_path, alg_type='ga')
         self.test_df = self.test_data_processed.processed_dataframe.drop(labels=['id'], axis=1)
+        # self.test_df = self.test_df.head(50000)
         self.ga_results = pd.read_csv(ga_results_path)
         self.positive = 0
         self.false_attack = 0
@@ -17,14 +18,31 @@ class GATesting:
 
         self.test_df_unlabeled = self.test_df.drop(labels=['label'], axis=1)
 
-    def checkIfAnomaly(self, idx):
+    def checkIfAnomaly(self, d):
         # TODO: how to do that
-        for index, row in self.ga_results.iterrows():
-            pass
+        for index_test, row_test in self.test_df.iterrows():
+            # print(index_test)
+            flag = 0
+            for index_ga, row_ga in self.ga_results.iterrows():
+                common_columns = set(row_test.index) & set(row_ga.index)
+                common_elements = sum(row_test[col] == row_ga[col] for col in common_columns)
+
+                if common_elements >= d and row_test['label'] == 1:
+                    self.positive += 1
+                    flag = 1
+                    break
+                elif common_elements >= d and row_test['label'] == 0:
+                    self.false_attack += 1
+                    flag = 1
+                    break
+            if flag == 0 and row_test['label'] == 1:
+                self.false_normal += 1
+            elif flag == 0 and row_test['label'] == 0:
+                self.negative += 1
 
     def testGA(self):
-        for i in range(70000, 80800):
-            self.checkIfAnomaly(i)
+
+        self.checkIfAnomaly(8)
         print('positive', self.positive)
         print('false positive', self.false_attack)
         print('negative', self.negative)

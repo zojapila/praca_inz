@@ -181,7 +181,8 @@ class ParticleSwarmOptimization:
         # print(self.data.head())
         self.generateInitialPopulation()
         # self.saveToCsvComputing()
-        for _ in range(self.max_iter - 1):
+        for iteration in range(self.max_iter - 1):
+            print(iteration)
             for i in range(self.population_size):
                 self.k_table[i] = self.computeK(self.x_i[i][0], self.x_i[i][1])
                 self.fitness_table[i] = self.calculateFitnessFunction(i)
