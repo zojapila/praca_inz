@@ -38,14 +38,14 @@ import time
 # training_data = "D:/studia/inzynierka/unsw_nb15/UNSW_NB15_training-set.csv"
 work_computer = "C:/praca_inz/source_code/UNSW_NB15_training-set.csv"
 testing_data = "C:/praca_inz/UNSW_NB15_testing-set.csv"
-pso_results = "C:/praca_inz/source_code/ga_results9.csv"
+pso_results = "C:/praca_inz/source_code/ga_results10.csv"
 processed_data = preprocessing.DataPreprocessing(work_computer, alg_type='ga')
 # processed_data = preprocessing.DataPreprocessing(work_computer)
 
 # ga
 start = time.time()
-genetic_algorithm = ga.GeneticAlgorithm(processed_data, initial_population_size=250, max_iter=5,
-                                        num_of_final_sol=125, filenum=9)
+genetic_algorithm = ga.GeneticAlgorithm(processed_data, initial_population_size=300, max_iter=5,
+                                        num_of_final_sol=300, filenum=10)
 result = genetic_algorithm.geneticAlgorithmLoop()
 end = time.time()
 print(end - start)

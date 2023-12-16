@@ -11,7 +11,7 @@ from data_preperation.data_preprocessing import DataPreprocessing
 
 class GeneticAlgorithm:
     def __init__(self, data: DataPreprocessing, initial_population_size: int = 100, max_iter: int = 100,
-                 mutation_probability: float = 0.4, num_of_final_sol=20) -> None:
+                 mutation_probability: float = 0.4, num_of_final_sol=20, filenum: int = 1) -> None:
         self.population_size: int = initial_population_size
         self.data: DataPreprocessing = data
         self.max_iter = max_iter
@@ -26,6 +26,7 @@ class GeneticAlgorithm:
         self.evaluation_results: list = []
         self.first_free_idx = 0
         self.num_of_final_sol = num_of_final_sol
+        self.filenum = filenum
         # self.generateInitialPopulation()
         # self.evaluationFunction(1)
 
@@ -65,20 +66,6 @@ class GeneticAlgorithm:
     @brief: evaluation function for given element od the population is being calculated 
     '''
     def evaluationFunction(self, idx) -> float:
-        # version 1
-        # result = 0
-        # indexes_to_check = [i for i in range(0, len(self.population[idx]))]
-        # for i in self.data.attack_df.itertuples():
-        #     for column in indexes_to_check:
-        #         if i[column + 2] == self.population[idx][column]:
-        #             # print(self.data.column_labels[column])
-        #             result += weights[column]
-        #             indexes_to_check.remove(column)
-        # # TODO: LEARN WHAT THIS RANKING SHOULD BE
-        # ranking = 1  # temporary solution
-        # result = 1 - (result * ranking) / 100
-
-        # version 2
         idx_appears = []
         quantity = [0 for _ in range(self.getChromosomeLength())]
 
@@ -92,7 +79,7 @@ class GeneticAlgorithm:
 
                     # result += weights[column]
                     # indexes_to_check.remove(column)
-        result = sum([i * self.weights[i] for i in idx_appears])
+        result = sum([i * self.weights[i] / self.data.processed_dataframe.shape[0] for i in idx_appears])
         ranking = 1  # temporary solution
         x = sum(quantity)
         # x += [i for i in quantity]
@@ -143,9 +130,18 @@ class GeneticAlgorithm:
         return True
 
     def crossing(self, id1: int, id2: int) -> bool:
-        point_of_crossing = random.randint(2, self.getChromosomeLength() - 3)
-        child1 = [self.population[id1][i] for i in range(0, point_of_crossing)]
-        for i in range(point_of_crossing, len(self.population[id2])):
+        point_of_crossing = [random.randint(2, self.getChromosomeLength() - 3) for _ in range(3)]
+        while point_of_crossing[1] == point_of_crossing[0]:
+            point_of_crossing[1] = random.randint(2, self.getChromosomeLength() - 3)
+        while point_of_crossing[2] == point_of_crossing[0] or point_of_crossing[1] == point_of_crossing[2]:
+            point_of_crossing[2] = random.randint(2, self.getChromosomeLength() - 3)
+        point_of_crossing = sorted(point_of_crossing)
+        child1 = [self.population[id1][i] for i in range(0, point_of_crossing[0])]
+        for i in range(point_of_crossing[0], point_of_crossing[1]):
+            child1.append(self.population[id2][i])
+        for i in range(point_of_crossing[1], point_of_crossing[2]):
+            child1.append(self.population[id1][i])
+        for i in range(point_of_crossing[2], len(self.population[id2])):
             child1.append(self.population[id2][i])
         self.population[self.first_free_idx] = child1
         if random.random() <= self.mutation_probability:
@@ -162,7 +158,7 @@ class GeneticAlgorithm:
         solution_idxs = sorted(self.evaluation_results, key=lambda x: x[1], reverse=True)[:self.num_of_final_sol]
         solution = [self.population[idx] for idx, _ in solution_idxs]
         df_solution = pd.DataFrame(solution, columns=self.column_list)
-        df_solution.to_csv('ga_results3.csv', index=False)
+        df_solution.to_csv('ga_results' + str(self.filenum) + '.csv', index=False)
         return df_solution
 
     def geneticAlgorithmLoop(self):

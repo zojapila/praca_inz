@@ -21,7 +21,7 @@ class GATesting:
     def checkIfAnomaly(self, d):
         # TODO: how to do that
         for index_test, row_test in self.test_df.iterrows():
-            # print(index_test)
+            print(index_test)
             flag = 0
             for index_ga, row_ga in self.ga_results.iterrows():
                 common_columns = set(row_test.index) & set(row_ga.index)
